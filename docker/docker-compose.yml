@@ -1,12 +1,12 @@
 networks:
-  vault-network:
+  vault-net:
     driver: bridge
 
 services:
   vault:
     image: hashicorp/vault:latest
     container_name: vault
-    hostname: vault
+    hostname: vault.secrets
     ports:
       - "8200:8200"
     environment:
@@ -21,9 +21,28 @@ services:
     cap_add:
       - IPC_LOCK
     entrypoint: ["/bin/sh", "/vault-entrypoint.sh"]
-    #restart: unless-stopped
+    restart: unless-stopped
     networks:
-      - vault-network
+      - vault-net
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx.secrets
+    hostname: nginx.secrets
+    ports:
+      - "80:80"
+    volumes:
+      - ./config/nginx/nginx-config.conf:/etc/nginx/nginx.conf
+    healthcheck:
+      test: ["CMD", "service", "nginx", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      - vault
+    restart: unless-stopped
+    networks:
+      - vault-net
 
 volumes:
   vault-data:
