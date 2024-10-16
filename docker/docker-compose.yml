@@ -15,11 +15,13 @@ services:
       - VAULT_LOG_LEVEL=${VAULT_LOG_LEVEL}
     volumes:
       - ./config/vault/vault-config.hcl:/vault/config/vault.hcl
+      - ./config/vault/vault-keys.txt:/vault/keys.txt
       - vault-data:/vault/data
+      - ./config/vault/vault-entrypoint.sh:/vault-entrypoint.sh
     cap_add:
       - IPC_LOCK
-    entrypoint: ["vault", "server", "-config=/vault/config/vault.hcl"]
-    restart: unless-stopped
+    entrypoint: ["/bin/sh", "/vault-entrypoint.sh"]
+    #restart: unless-stopped
     networks:
       - vault-network
 
