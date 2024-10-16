@@ -1,0 +1,32 @@
+networks:
+  vault-network:
+    driver: bridge
+
+services:
+  vault:
+    image: hashicorp/vault:latest
+    container_name: vault
+    hostname: vault
+    ports:
+      - "8200:8200"
+    environment:
+      - VAULT_ADDR=${VAULT_ADDR}
+      - VAULT_API_ADDR=${VAULT_API_ADDR}
+      - VAULT_LOG_LEVEL=${VAULT_LOG_LEVEL}
+    volumes:
+      - ./config/vault/vault-config.hcl:/vault/config/vault.hcl
+      - vault-data:/vault/data
+    cap_add:
+      - IPC_LOCK
+    entrypoint: ["vault", "server", "-config=/vault/config/vault.hcl"]
+    restart: unless-stopped
+    networks:
+      - vault-network
+
+volumes:
+  vault-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ../data/vault
+      o: bind
